@@ -1,9 +1,15 @@
+import { dbService } from "myBase";
 import React, { useState } from "react"
 
 const Home = () => {
     const [youngWeet,setYoungWeet] = useState("")
-    const onSubmit = (event) => {
+    const onSubmit = async (event) => {
         event.preventDefault();
+        await dbService.collection("youngWeets").add({
+            youngWeet,
+            createdAt: Date.now(),
+        })
+        setYoungWeet("")
     }
     const onChange = (event) => {
         const {target:{value}} = event
