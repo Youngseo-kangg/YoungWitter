@@ -1,28 +1,40 @@
 import { dbService } from "myBase";
 import React, { useState, useEffect } from "react"
 
-const Home = () => {
+const Home = ({userObj}) => {
     const [youngWeet,setYoungWeet] = useState("") // youngWeet 하나하나
     const [youngWeets, setYoungWeets] = useState([]) // 전체 youngWeets
-    const getYoungWeets = async() => {
-        const getYWeets = await dbService.collection("youngWeets").get()
-        getYWeets.forEach((doc)=>{
-            const youngWeetsObj = {
-                ...doc.data(),
-                id: doc.id,
-            }
-            setYoungWeets((prev)=>[youngWeetsObj, ...prev])
-            console.log(youngWeets)
-        })
-    }
+    // 실시간 확인이 필요 없는 경우 -> get()활용
+    // const getYoungWeets = async() => {
+    //     const getYWeets = await dbService.collection("youngWeets").get()
+    //     getYWeets.forEach((doc)=>{
+    //         const youngWeetsObj = {
+    //             ...doc.data(),
+    //             id: doc.id,
+    //         }
+    //         setYoungWeets((prev)=>[youngWeetsObj, ...prev])
+    //         console.log(youngWeets)
+    //     })
+    // }
     useEffect(()=>{
-        getYoungWeets();
+        // 실시간 확인하는 경우 -> onSnapshot 활용
+        dbService.collection("youngWeets").onSnapshot((snapshot) => {
+            const yWeetArray = snapshot.docs.map((doc)=>({
+                id:doc.id,
+                ...doc.data()
+            }))
+            setYoungWeets(yWeetArray)
+        })
+        // 실시간 확인 필요 없는 경우
+        // getYoungWeets()
     },[])
+
     const onSubmit = async (event) => {
         event.preventDefault();
         await dbService.collection("youngWeets").add({
-            youngWeet,
+            text: youngWeet,
             createdAt: Date.now(),
+            createdBy: userObj.uid,
         })
         setYoungWeet("")
     }
@@ -38,7 +50,7 @@ const Home = () => {
             </form>
             <ul>
                 {youngWeets.map((weet)=>{
-                    return <li key={weet.id}>{weet.youngWeet}</li>
+                    return <li key={weet.id}>{weet.text}</li>
                 })}
             </ul>
         </div>
