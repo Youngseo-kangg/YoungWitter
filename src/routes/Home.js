@@ -1,3 +1,4 @@
+import Youngweet from "components/Youngweet";
 import { dbService } from "myBase";
 import React, { useState, useEffect } from "react"
 
@@ -18,7 +19,7 @@ const Home = ({userObj}) => {
     // }
     useEffect(()=>{
         // 실시간 확인하는 경우 -> onSnapshot 활용
-        dbService.collection("youngWeets").onSnapshot((snapshot) => {
+        dbService.collection("youngWeets").orderBy("createdAt","desc").onSnapshot((snapshot) => {
             const yWeetArray = snapshot.docs.map((doc)=>({
                 id:doc.id,
                 ...doc.data()
@@ -50,7 +51,7 @@ const Home = ({userObj}) => {
             </form>
             <ul>
                 {youngWeets.map((weet)=>{
-                    return <li key={weet.id}>{weet.text}</li>
+                    <Youngweet key={weet.id} weetsObj={weet} isOwner={weet.creatorId===userObj.uid}/>
                 })}
             </ul>
         </div>
